@@ -61,12 +61,7 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 
-### 6. Create Superuser (Optional)
-```bash
-python manage.py createsuperuser
-```
-
-### 7. Run the Application
+### 6. Run the Application
 ```bash
 python manage.py runserver
 ```
