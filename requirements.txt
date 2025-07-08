@@ -1,0 +1,11 @@
+django
+langchain
+langchain-community
+langchain-groq
+langchain-huggingface
+pypdf2
+faiss-cpu
+python-dotenv
+groq
+sentence-transformers
+pypdf

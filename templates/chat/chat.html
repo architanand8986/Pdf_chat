@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}Chat with {{ document.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="fas fa-comments me-2"></i>
+                Chat with "{{ document.title }}"
+            </h2>
+            <a href="{% url 'chat:index' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Documents
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="chat-container" id="chatContainer">
+                    {% for message in messages %}
+                        <div class="message user">
+                            <strong>You:</strong> {{ message.question }}
+                        </div>
+                        <div class="message bot">
+                            <strong>Assistant:</strong> {{ message.answer|linebreaks }}
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="typing-indicator" id="typingIndicator">
+                    <i class="fas fa-spinner fa-spin me-2"></i>Assistant is typing...
+                </div>
+                
+                <div class="mt-3">
+                    <div class="input-group">
+                        <input type="text" 
+                               class="form-control" 
+                               id="messageInput" 
+                               placeholder="Ask a question about the document..."
+                               autocomplete="off">
+                        <button class="btn btn-primary" type="button" id="sendButton">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const chatContainer = document.getElementById('chatContainer');
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendButton');
+    const typingIndicator = document.getElementById('typingIndicator');
+    const documentId = {{ document.id }};
+
+    function scrollToBottom() {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function addMessage(content, isUser = false) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+        messageDiv.innerHTML = `<strong>${isUser ? 'You' : 'Assistant'}:</strong> ${content}`;
+        chatContainer.appendChild(messageDiv);
+        scrollToBottom();
+    }
+
+    function showTyping() {
+        typingIndicator.style.display = 'block';
+        scrollToBottom();
+    }
+
+    function hideTyping() {
+        typingIndicator.style.display = 'none';
+    }
+
+    async function sendMessage() {
+        const question = messageInput.value.trim();
+        if (!question) return;
+
+        // Disable input
+        messageInput.disabled = true;
+        sendButton.disabled = true;
+
+        // Add user message
+        addMessage(question, true);
+        messageInput.value = '';
+
+        // Show typing indicator
+        showTyping();
+
+        try {
+            const response = await fetch('{% url "chat:chat_api" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    doc_id: documentId,
+                    question: question
+                })
+            });
+
+            const data = await response.json();
+            
+            if (response.ok) {
+                hideTyping();
+                addMessage(data.answer.replace(/\n/g, '<br>'));
+            } else {
+                hideTyping();
+                addMessage(`Error: ${data.error}`, false);
+            }
+        } catch (error) {
+            hideTyping();
+            addMessage(`Error: ${error.message}`, false);
+        } finally {
+            // Re-enable input
+            messageInput.disabled = false;
+            sendButton.disabled = false;
+            messageInput.focus();
+        }
+    }
+
+    // Event listeners
+    sendButton.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    // Focus on input when page loads
+    messageInput.focus();
+    scrollToBottom();
+</script>
+{% endblock %}

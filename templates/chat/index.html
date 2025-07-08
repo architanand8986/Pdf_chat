@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}PDF Chat - Home{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-upload me-2"></i>Upload PDF
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'chat:upload_pdf' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Document Title</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="file" class="form-label">PDF File</label>
+                        <input type="file" class="form-control" id="file" name="file" accept=".pdf" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-upload me-2"></i>Upload & Process
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-files me-2"></i>Your Documents
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if documents %}
+                    <div class="row">
+                        {% for document in documents %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card pdf-card h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title">{{ document.title }}</h6>
+                                        <p class="card-text text-muted small">
+                                            <i class="fas fa-calendar me-1"></i>
+                                            {{ document.uploaded_at|date:"M d, Y H:i" }}
+                                        </p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            {% if document.processed %}
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check me-1"></i>Processed
+                                                </span>
+                                                <a href="{% url 'chat:chat_with_pdf' document.id %}" class="btn btn-primary btn-sm">
+                                                    <i class="fas fa-comments me-1"></i>Chat
+                                                </a>
+                                            {% else %}
+                                                <span class="badge bg-warning">
+                                                    <i class="fas fa-spinner fa-spin me-1"></i>Processing
+                                                </span>
+                                                <button class="btn btn-secondary btn-sm" disabled>
+                                                    <i class="fas fa-comments me-1"></i>Chat
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-file-pdf fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No documents uploaded yet</h5>
+                        <p class="text-muted">Upload your first PDF to get started!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
