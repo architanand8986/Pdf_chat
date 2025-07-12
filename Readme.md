@@ -17,7 +17,7 @@ A powerful Django web application that allows users to upload PDF documents and 
 - **Backend**: Django 4.2+
 - **AI/ML**: 
   - LangChain & LangChain-Community
-  - Groq API (Mixtral-8x7b-32768)
+  - Groq API (llama-7b-8192)
   - HuggingFace Embeddings (sentence-transformers)
   - FAISS Vector Database
 - **Frontend**: Bootstrap 5, JavaScript (ES6+)
